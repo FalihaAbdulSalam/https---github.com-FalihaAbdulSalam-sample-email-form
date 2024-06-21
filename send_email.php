@@ -4,12 +4,17 @@ require 'vendor/autoload.php';
 
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
+use Dotenv\Dotenv;
+
+// Load environment variables from .env file
+$dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
+$dotenv->load();
 
 // Database connection parameters
-$servername = "localhost";
-$username = "root";
-$password = ""; // Replace with your MySQL password if set
-$dbname = "sample_mail";
+$servername = $_ENV['DB_SERVERNAME'];
+$username = $_ENV['DB_USERNAME'];
+$password = $_ENV['DB_PASSWORD'];
+$dbname = $_ENV['DB_NAME'];
 
 // Create connection
 $conn = new mysqli($servername, $username, $password, $dbname);
@@ -28,29 +33,30 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         die("Invalid email format");
     }
-    
+
     // Prepare SQL statement to insert email into `emails` table
-    $sql = "INSERT INTO emails (email) VALUES ('$email')";
+    $stmt = $conn->prepare("INSERT INTO emails (email) VALUES (?)");
+    $stmt->bind_param("s", $email);
 
     // Execute SQL statement
-    if ($conn->query($sql) === TRUE) {
+    if ($stmt->execute()) {
         echo "New record created successfully";
-        
+
         // Send email notification using PHPMailer
         $mail = new PHPMailer(true);
 
         try {
             //Server settings
             $mail->isSMTP();
-            $mail->Host       = 'smtp.gmail.com'; // Your SMTP host
+            $mail->Host       = $_ENV['SMTP_HOST']; // Your SMTP host
             $mail->SMTPAuth   = true;
-            $mail->Username   = 'falihaabdulsalam@gmail.com'; // SMTP username
-            $mail->Password   = 'jipr oqwg hygf lssr';   // SMTP password
+            $mail->Username   = $_ENV['SMTP_USERNAME']; // SMTP username
+            $mail->Password   = $_ENV['SMTP_PASSWORD']; // SMTP password
             $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS; // Enable TLS encryption
-            $mail->Port       = 587; // TCP port to connect to
+            $mail->Port       = $_ENV['SMTP_PORT']; // TCP port to connect to
 
             //Recipients
-            $mail->setFrom($email);
+            $mail->setFrom('no-reply@yourdomain.com', 'Mailer');
             $mail->addAddress('falihaabdulsalam@gmail.com');
 
             // Content
@@ -64,8 +70,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             echo "<br>Failed to send email. Error: {$mail->ErrorInfo}";
         }
     } else {
-        echo "Error: " . $sql . "<br>" . $conn->error;
+        echo "Error: " . $stmt->error;
     }
+
+    // Close statement
+    $stmt->close();
 }
 
 // Close connection
