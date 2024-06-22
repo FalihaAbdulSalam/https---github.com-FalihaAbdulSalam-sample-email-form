@@ -11,7 +11,7 @@ use PHPMailer\PHPMailer\Exception;
 // Database connection parameters
 $servername = "sql308.infinityfree.com";
 $username = "if0_36765065";
-$password = "xAZ1I9djpgDJsW"; // Replace with your MySQL password if set
+$password = ""; // Replace with your MySQL password if set
 $dbname = "if0_36765065_email";
 
 // Create connection
@@ -48,7 +48,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $mail->Host       = 'smtp.gmail.com'; // Your SMTP host
             $mail->SMTPAuth   = true;
             $mail->Username   = 'falihaabdulsalam@gmail.com'; // SMTP username
-            $mail->Password   = 'jipr oqwg hygf lssr';   // SMTP password
+            $mail->Password   = '';   // SMTP password
             $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS; // Enable TLS encryption
             $mail->Port       = 587; // TCP port to connect to
 
